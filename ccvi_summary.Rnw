@@ -1,0 +1,139 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc} %\UseRawInputEncoding
+\usepackage{fontspec}
+\setmainfont{Gill Sans MT}
+\usepackage[margin=10pt,font=small]{caption}
+\usepackage{afterpage}
+\usepackage{geometry}
+%\usepackage{xcolor}
+\usepackage[table]{xcolor}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{adjustbox}
+\usepackage{wrapfig}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{url}
+\usepackage{colortbl}
+\urlstyle{same}
+\usepackage{graphicx}
+\graphicspath{ {c:/Users/singh/OneDrive/PNHP/CCVI Plants}{c:/Users/singh/OneDrive/PNHP} }
+\usepackage[style=authoryear,hyperref=false]{biblatex}
+\addbibresource{../../citations/PNHP_refs.bib}
+% \usepackage{cite}
+\usepackage{enumitem}
+\setlist{nolistsep}
+\usepackage{fancyhdr} %for headers,footers
+% \usepackage{float}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  filecolor=magenta,      
+  urlcolor=blue,
+}
+\usepackage{lastpage}
+
+\geometry{letterpaper, top=0.45in, bottom=0.75in, left=0.75in, right=0.75in}
+\pagestyle{fancy} \fancyhf{} \renewcommand\headrulewidth{0pt} %strip default header/footer stuff
+
+\setlength\intextsep{0pt}
+
+%add footers
+\lfoot{
+  \small   %small font. The double slashes is newline in fancyhdr
+  \textcolor{gray}{\Sexpr{paste( "Climate Change Vulnerbility Index Summary for ", as.character(ccvi$SNAME[i]), sep=" ")}\\Pennsylvania Natural Heritage Program }
+}
+\rfoot{
+  \small  
+  \textcolor{gray}{page \thepage \ of \ \pageref*{LastPage}}
+}
+
+\renewcommand{\arraystretch}{1.4}
+
+\begin{document}
+%\RaggedRight
+\catcode`\_=11
+
+% Header
+\noindent
+\textbf{\LARGE{\Sexpr{paste(as.character(ccvi$SNAME[i]), " (",ccvi$SCOMNAME[i],")",sep="")}}}\\
+%\large A site of \underline{\Sexpr{nha_siterank} Significance} \
+
+\begin{center}
+\includegraphics[width=0.5\textwidth]{\Sexpr{spec.image}}
+\smallskip \\
+\small{Image Source: \Sexpr{image.citation}} \\
+\end{center}
+
+\medskip \\
+
+\noindent \textbf{Global Rank:} \Sexpr{as.character(ccvi$GRank[i])} \\
+\noindent \textbf{State Rank:} \Sexpr{as.character(ccvi$SRank[i])} \\
+\noindent \textbf{Climate Change Vulnerability Index:} \Sexpr{as.character(ccvi$Index[i])} \\
+\noindent \textbf{Confidence:} \Sexpr{as.character(ccvi$Confidence[i])} \\ 
+
+\setlength{\arrayrulewidth}{0.35mm}
+\begin{table}[h!]
+  \begin{center}
+    %\caption{Multirow table.}
+    \label{tab:table1}
+    \begin{tabular}{|c|>{\columncolor{\Sexpr{as.character(db_ccvi$color[which(db_ccvi$code==ccvi$Index[i])])}}}c|}
+      \hline
+      \textbf{CCVI Score} & \cellcolor{white}\textbf{Description} \\
+      \hline
+      \cellcolor{red} \Sexpr{ifelse(ccvi$Index[i]=="EV",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="EV"),"name"])} & \\
+      \cellcolor{orange} \Sexpr{ifelse(ccvi$Index[i]=="HV",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="HV"),"name"])} & \\
+      \cellcolor{yellow} \Sexpr{ifelse(ccvi$Index[i]=="MV",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="MV"),"name"])} & \\
+      \cellcolor{green} \Sexpr{ifelse(ccvi$Index[i]=="LV",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="LV"),"name"])} & \\
+      \cellcolor{gray} \Sexpr{ifelse(ccvi$Index[i]=="IE",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="IE"),"name"])} & \multirow{-5}{5cm}{\Sexpr{db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"description"]}}\\
+      \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+\noindent \textbf{Habitat:}  \Sexpr{habitat} \\
+
+\noindent \textbf{Current Threats:} 
+\begin{itemize}
+<<results="asis", echo=FALSE>>=
+cat(sprintf('\\item{%s}', threats), sep = '\n')
+@ 
+\end{itemize}
+\bigskip
+
+
+\noindent \textbf{Main Factors Contributing to Vulnerability Rank:} 
+\bigskip
+\Sexpr{factor.table.latex}
+\bigskip
+
+
+
+\noindent \textbf{References:} \\
+
+
+
+\bigskip
+% the next line moves the recommended citation to the bottom of the page
+\vspace*{\fill}
+%%%  Recommended Citation %%% 
+
+\Sexpr{as.character(ccvi$Assessor[i])}\\
+\Sexpr{as.character(ccvi$DatePasted[i])}\\
+
+\setlength{\fboxsep}{5pt}
+\fbox{
+ %\begin{minipage}[l]{0.2\linewidth}
+ %\end{minipage}%
+ \begin{minipage}[c]{0.9\linewidth}
+  \begin{wrapfigure}{l}{0.2\textwidth}
+    \centering
+    \includegraphics[width=0.2\textwidth]{PNHP Logo}%png logo file at repository root
+  \end{wrapfigure}
+   This Climate Change Vulnerability Assessment was developed with funding from the X.  \\ \\ Please cite this CCVI as: \\ 
+   Pennsylvania Natural Heritage Program. \Sexpr{format(Sys.Date(), "%Y")}. \Sexpr{as.character(ccvi$SNAME[i])} NHA. Created on \Sexpr{format(Sys.Date(), "%d %b %Y")}. Available at: \href{\Sexpr{url_CCVIpage}}{\Sexpr{url_CCVIpage}}   
+  \end{minipage}
+}
+
+\end{document}
