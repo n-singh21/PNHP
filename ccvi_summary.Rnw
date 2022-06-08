@@ -6,13 +6,14 @@
 \usepackage{afterpage}
 \usepackage{geometry}
 %\usepackage{xcolor}
-\usepackage[table]{xcolor}
+\usepackage[dvipsnames,table]{xcolor}
 \usepackage{multirow}
 \usepackage{array}
 \usepackage{adjustbox}
 \usepackage{wrapfig}
 \usepackage{caption}
 \usepackage{subcaption}
+\usepackage{longtable}
 \usepackage{url}
 \usepackage{colortbl}
 \urlstyle{same}
@@ -65,48 +66,51 @@
 \smallskip \\
 \small{Image Source: \Sexpr{image.citation}} \\
 \end{center}
+\medskip
+\setlength{\arrayrulewidth}{0.35mm}
 
-\medskip \\
-
+\noindent \begin{minipage}[c]{.375\textwidth}
 \noindent \textbf{Global Rank:} \Sexpr{as.character(ccvi$GRank[i])} \\
+\medskip 
 \noindent \textbf{State Rank:} \Sexpr{as.character(ccvi$SRank[i])} \\
 \noindent \textbf{Climate Change Vulnerability Index:} \Sexpr{as.character(ccvi$Index[i])} \\
+\medskip
 \noindent \textbf{Confidence:} \Sexpr{as.character(ccvi$Confidence[i])} \\ 
-
-\setlength{\arrayrulewidth}{0.35mm}
-\begin{table}[h!]
-  \begin{center}
+\noindent \textbf{Habitat:}  \Sexpr{habitat} \\
+\end{minipage}
+\hspace{0.02\textwidth}
+%\begin{wraptable}{r}{.6\textwidth}
+\noindent \begin{minipage}[c]{.475\textwidth}
+  %\begin{center}
     %\caption{Multirow table.}
     \label{tab:table1}
     \begin{tabular}{|c|>{\columncolor{\Sexpr{as.character(db_ccvi$color[which(db_ccvi$code==ccvi$Index[i])])}}}c|}
       \hline
       \textbf{CCVI Score} & \cellcolor{white}\textbf{Description} \\
       \hline
-      \cellcolor{red} \Sexpr{ifelse(ccvi$Index[i]=="EV",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="EV"),"name"])} & \\
-      \cellcolor{orange} \Sexpr{ifelse(ccvi$Index[i]=="HV",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="HV"),"name"])} & \\
-      \cellcolor{yellow} \Sexpr{ifelse(ccvi$Index[i]=="MV",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="MV"),"name"])} & \\
-      \cellcolor{green} \Sexpr{ifelse(ccvi$Index[i]=="LV",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="LV"),"name"])} & \\
-      \cellcolor{gray} \Sexpr{ifelse(ccvi$Index[i]=="IE",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="IE"),"name"])} & \multirow{-5}{5cm}{\Sexpr{db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"description"]}}\\
+      \cellcolor{RedOrange} \Sexpr{ifelse(ccvi$Index[i]=="EV",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="EV"),"name"])} & \\
+      \cellcolor{BurntOrange} \Sexpr{ifelse(ccvi$Index[i]=="HV",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="HV"),"name"])} & \\
+      \cellcolor{Goldenrod} \Sexpr{ifelse(ccvi$Index[i]=="MV",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="MV"),"name"])} & \\
+      \cellcolor{Green} \Sexpr{ifelse(ccvi$Index[i]=="LV",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="LV"),"name"])} & \\
+      \cellcolor{Gray} \Sexpr{ifelse(ccvi$Index[i]=="IE",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="IE"),"name"])} & \multirow{-5}{5cm}{\Sexpr{db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"description"]}}\\
       \hline
     \end{tabular}
-  \end{center}
-\end{table}
+  %\end{center}
+\end{minipage}
 
-\noindent \textbf{Habitat:}  \Sexpr{habitat} \\
-
+\bigskip
 \noindent \textbf{Current Threats:} 
 \begin{itemize}
 <<results="asis", echo=FALSE>>=
 cat(sprintf('\\item{%s}', threats), sep = '\n')
 @ 
 \end{itemize}
-\bigskip
+\bigskip 
 
 
 \noindent \textbf{Main Factors Contributing to Vulnerability Rank:} 
-\bigskip
 \Sexpr{factor.table.latex}
-\bigskip
+\smallskip \\
 
 
 

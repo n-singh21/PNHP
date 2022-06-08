@@ -22,13 +22,13 @@ url_CCVIpage <- "http://www.naturalheritage.state.pa.us/climate.aspx" #CCVI webs
 
 ccvi_file <- "C://Users/singh/OneDrive/PNHP/PNHP Git/ccvi_release_3.02_Master.xlsm" #master excel for CCVI
 ccvi_info <- "C://Users/singh/OneDrive/PNHP/PNHP Git/CCVI Life History Data Hub.xlsx" #Habitat excel
-ccvi_threats <- "C://Users/singh/OneDrive/PNHP/PNHP Git/CompiledELCODE_threatsrecs_July2019.xlsx" #threats excel
+ccvi_threats <- "C://Users/singh/OneDrive/PNHP/PNHP Git/CompiledELCODE_threatsrecs_June2022.xlsx" #threats excel
 ccvi_images <- "C://Users/singh/OneDrive/PNHP/PNHP Git/Missing Info.xlsx" #image citation excel
 
 ccvi <- read_xlsx(ccvi_file, "Results Table", range=cell_rows(6:150)) #reading in ccvi excel
 ccvi_info <- read_xlsx(ccvi_info) #reading in habitats excel
 ccvi_threats_headings <- as.character(read_xlsx(ccvi_threats,n_max=1,col_names = FALSE))[1:25] #reading in threats headings (separate in order to skip over unneeded cells)
-ccvi_threats <- read_xlsx(ccvi_threats,col_names = ccvi_threats_headings,range=cell_rows(873:2343)) #reading in threats excel
+ccvi_threats <- read_xlsx(ccvi_threats,col_names = ccvi_threats_headings,range=cell_rows(873:2440)) #reading in threats excel
 ccvi_images <- read_xlsx(ccvi_images, "Species Images") #reading in images excel
 
 colnames(ccvi_info)[1] = "SNAME" #renaming species column to SNAME (for matching purposes)
@@ -46,7 +46,8 @@ ccvi.factors[factor.col] = factor.full.name #renaming factors
 db_ccvi_code <- c("EV","HV","MV","LV","IE") #vulnerability code
 db_ccvi_name <- c("Extremely Vulnerable (EV)","Highly Vulnerable (HV)","Moderately Vulnerable (MV)","Not Vulnerable/Presumed Stable (LV)","Not Vulnerable/Increase Likely (IE)") #vulnerability name
 db_ccvi_desc <- c("Abundance and/or range extent within geographical area assessed extremely likely to substantially decrease or disappear by 2050.","Abundance and/or range extent within geographical area assessed likely to decrease significantly by 2050.","Abundance and/or range extent within geographical area assessed likely to decrease by 2050.","Available evidence does not suggest that abundance and/or range extent within the geographic area assessed will change (increase/decrease) substantially by 2050. Actual range boundaries may change.","Available evidence suggests that abundance and/or range extent within geographic area assessed is likely to increase by 2050.") #vulnerability description
-db_ccvi_col <- c("red","orange","yellow","green","gray") #vulnerability color
+#db_ccvi_col <- c("red","orange","yellow","green","gray") #vulnerability color
+db_ccvi_col <- c("RedOrange","BurntOrange","Goldenrod","Green","Gray")
 
 db_ccvi <- data.frame(code=db_ccvi_code, name=db_ccvi_name, description=db_ccvi_desc, color=db_ccvi_col, stringsAsFactors=FALSE) #combining vulnerability info into dataframe
 rm(db_ccvi_code, db_ccvi_name, db_ccvi_desc, db_ccvi_col) #removing objects
@@ -58,7 +59,7 @@ rm(db_ccvi_code, db_ccvi_name, db_ccvi_desc, db_ccvi_col) #removing objects
 
 setwd("C://Users/singh/OneDrive/PNHP/PDFs") #setting working directory to where I want pdfs to go
 
-i=1
+i=38
 #for(i in 1:nrow(ccvi)){
   abr.sname = unlist(strsplit(ccvi$SNAME[i]," var. "))[1] #Removes var. from name (done for matching purposes)
   pictures = list.files(path="C://Users/singh/OneDrive/PNHP/CCVI Plants") #lists names of images
@@ -101,24 +102,26 @@ i=1
                                     sep ='')} #bold/centering function
   factor.table.latex = print(factor.table.latex, #produces latex script
                              include.rownames = FALSE,
-                             hline.after = c(-1:nrow(factor.table)),
-                             sanitize.colnames.function=bold.center)
+                             hline.after = c(-1:(nrow(factor.table)-1)),
+                             sanitize.colnames.function=bold.center,
+                             tabular.environment="longtable")
   fname <- stringi::stri_replace_all_fixed(ccvi$SNAME[i], " ", "_") #file names of species
+  pdf_filename <- paste(fname,"_",gsub("[^0-9]", "", Sys.Date() ),sep="") #adding date to name
   makePDF <- function(rnw_template) { #pdf making function
     knit(here::here("ccvi_summary.rnw"), 
-         output=paste(fname, ".tex",sep=""))
-    call <- paste0("xelatex -interaction=nonstopmode ", fname , ".tex")
+         output=paste(pdf_filename, ".tex",sep=""))
+    call <- paste0("xelatex -interaction=nonstopmode ",pdf_filename, ".tex")
     system(call)
     #system(paste0("xelatex ",pdf_filename))
     #system(call) # 2nd run to apply citation numbers
   }
   # function to delete .txt, .log etc if pdf is created successfully.
-  deletepdfjunk <- function(fname){
+  deletepdfjunk <- function(pdf_filename){
     fn_ext <- c(".aux",".out",".run.xml",".bcf",".blg",
                 ".tex",".log",".bbl",".toc")
-    if (file.exists(paste(fname, ".pdf",sep=""))){
+    if (file.exists(paste(pdf_filename, ".pdf",sep=""))){
       for(i in 1:NROW(fn_ext)){
-        fn <- paste(fname, fn_ext[i],sep="")
+        fn <- paste(pdf_filename, fn_ext[i],sep="")
         if (file.exists(fn)){
           file.remove(fn)
         }
@@ -126,14 +129,13 @@ i=1
     }
   }
   makePDF(ccvi_summary.rnw) #making species pdf
-  deletepdfjunk(fname) #removing excess files 
+  deletepdfjunk(pdf_filename) #removing excess files 
 #}
   
 setwd(here::here()) #restoring original working directory
 
-
-#pdf_filename <- paste(fname,"_",gsub("[^0-9]", "", Sys.Date() ),sep="")  
-#pdf_filename
-
 ```
+
+
+
 
