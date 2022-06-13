@@ -62,7 +62,7 @@
 %\large A site of \underline{\Sexpr{nha_siterank} Significance} \
 
 \begin{center}
-\includegraphics[width=0.5\textwidth]{\Sexpr{spec.image}}
+\includegraphics[height=0.33\textheight]{\Sexpr{spec.image}}
 \smallskip \\
 \small{Image Source: \Sexpr{image.citation}} \\
 \end{center}
