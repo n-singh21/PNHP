@@ -1,0 +1,164 @@
+---
+title: "iNat Project"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(rinat)
+library(here)
+library(readxl)
+library(tidyverse)
+element.tracking = read_csv("ET.csv")
+pa.species = read_tsv("iNat Species.csv")
+write.csv(pa.species,file="C://Users/singh/OneDrive/PNHP/PNHP Git/PA Species List.csv",row.names = FALSE)
+```
+
+```{r}
+# List of interested species
+species.index = which(element.tracking$EO_TRACK == "Y" | element.tracking$EO_TRACK == "W")
+inat.species = element.tracking$SNAME[species.index]
+```
+
+```{r}
+# Function to pull data from iNaturalist
+a <- list()
+k <- NULL
+
+#x=1
+#for(x in 1:length(inat.species)){
+for(x in 98:111){
+  #get metadata on the number of occurrences
+  print(paste("getting metadata from iNaturalist for ",inat.species[x],".", sep="") )
+  try(k <- get_inat_obs(taxon_name=inat.species[x], bounds=c(39.7198, -80.519891, 42.26986,	-74.689516) , geo=TRUE, meta=TRUE) ) # this step first queries iNat to see if there are any records present, if there are it actually downloads them.
+  Sys.sleep(10) # this is too throttle our requests so we don't overload their servers
+  if(is.list(k)){
+    print(paste("There are ", k$meta$found, " records on iNaturalist", sep=""))
+    if(k$meta$found>0){
+      a[[x]] <- get_inat_obs(taxon_name=inat.species[x], bounds=c(39.7198, -80.519891, 42.26986,	-74.689516) , geo=TRUE, maxresults = k$meta$found) 
+      k <- NULL
+    } else {}
+  } else {
+    print("No records found")
+  }
+}
+```
+
+```{r}
+# Filtering online species list to remove family and genus values
+table(pa.species$taxonRank)
+
+species.index = which(pa.species$taxonRank != "FAMILY" & pa.species$taxonRank != "GENUS")
+filtered.species = pa.species[species.index,]
+
+# Finding which species have a different species names from accepted species name
+names = filtered.species$species
+full.names = filtered.species$scientificName
+non.matching = rep(NA,length(names))
+for(ii in 1:length(names)){
+  names.split = unlist(strsplit(names[ii],split = " "))
+  name.search = paste0(names.split[1],".*",names.split[2])
+  non.matching[ii] = grepl(name.search,full.names[ii])
+}
+index = which(non.matching=="FALSE")
+```
+
+```{r}
+# Removing excess words and interruptions from accepted/original species names
+accepted = filtered.species$acceptedScientificName
+original.names = filtered.species$scientificName[index]
+ext.index = grepl(" subsp\\.| f\\. | var\\.",accepted)
+org.ext.index = grepl(" subsp\\.| f\\. | var\\.",original.names)
+
+short.names = accepted[!ext.index]
+long.names = accepted[ext.index]
+short.org.names = original.names[!org.ext.index]
+long.org.names = original.names[org.ext.index]
+
+long.names.split = rep(NA,length(long.names))
+for(ii in 1:length(long.names)){
+  split = unlist(strsplit(long.names[ii],split = " "))
+  long.names.split[ii] = paste(split[1],split[2],split[4])
+}
+
+short.names.split = rep(NA,length(short.names))
+for(ii in 1:length(short.names)){
+  split = unlist(strsplit(short.names[ii],split = " "))
+  short.names.split[ii] = paste(split[1],split[2])
+}
+
+long.names.main = rep(NA,length(long.names.split))
+for(ii in 1:length(long.names.split)){
+  split = unlist(strsplit(long.names.split[ii],split = " "))
+  long.names.main[ii] = paste(split[1],split[2])
+}
+
+########################
+
+long.org.names.split = rep(NA,length(long.org.names))
+for(ii in 1:length(long.org.names)){
+  split = unlist(strsplit(long.org.names[ii],split = " "))
+  long.org.names.split[ii] = paste(split[1],split[2],split[4])
+}
+
+short.org.names.split = rep(NA,length(short.org.names))
+for(ii in 1:length(short.org.names)){
+  split = unlist(strsplit(short.org.names[ii],split = " "))
+  short.org.names.split[ii] = paste(split[1],split[2])
+}
+
+long.org.names.main = rep(NA,length(long.org.names.split))
+for(ii in 1:length(long.org.names.split)){
+  split = unlist(strsplit(long.org.names.split[ii],split = " "))
+  long.org.names.main[ii] = paste(split[1],split[2])
+}
+
+# Finding interested species also in iNat species list
+accepted.matches = c(intersect(inat.species,long.names.split), intersect(inat.species,short.names.split), intersect(inat.species,long.names.main))
+
+accepted.matches
+length(accepted.matches)
+
+original.matches= c(intersect(inat.species,long.org.names.split),intersect(inat.species,short.org.names.split),intersect(inat.species,long.org.names.main))
+
+original.matches
+length(original.matches)
+
+# Only 1/3 of species are in this list
+combine = c(accepted.matches,original.matches)
+length(unique(combine))
+length(unique(combine))/length(inat.species)
+
+
+matching = rep(NA,length(inat.species))
+for(ii in 1:length(inat.species)){
+  matching[ii] = is.element(inat.species[ii],combine)
+}
+which(matching=="TRUE")
+inat.species[which(matching=="TRUE")]
+
+```
+
+
+```{r}
+# Testing pulling data from iNat servers - mostly right, but 1 species out of 14 didn't appear in my list, but was in iNaturalist
+empty.inat = rep(NA,length(a))
+for(ii in 1:length(a)){
+  empty.inat[ii] = is_empty(a[[ii]])
+}
+inat.species[which(empty.inat == TRUE)]
+
+```
+
+
+
+
+
+
+
+
+
+
