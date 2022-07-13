@@ -184,7 +184,7 @@ arc.write("C://Users/nsingh/Documents/ArcGIS/Projects/Practice - iNaturalist dat
 test_inat_db <- st_as_sf(test_db, coords=c("longitude","latitude"), crs="+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
 test_inat_db <- st_transform(test_inat_db, crs=customalbers) # reproject to the custom albers
 arc.delete("C://Users/nsingh/Documents/ArcGIS/Projects/Practice - iNaturalist data/iNatDatabase.gdb/test_inat_db")
-arc.write("C://Users/nsingh/Documents/ArcGIS/Projects/Practice - iNaturalist data/iNatDatabase.gdb/test_inat_db",test_inat_db,overwrite = TRUE,validate=TRUE)
+arc.write("C://Users/nsingh/Documents/ArcGIS/Projects/Practice - iNaturalist data/iNatDatabase.gdb/test_inat_db",test_inat_db,overwrite = TRUE,validate=TRUE) 
 ```
 
 ```
