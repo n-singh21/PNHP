@@ -9,7 +9,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 #### Set Up Needed for Documents ####
-
 library(tidyverse)
 library(readxl)
 library(knitr)
@@ -18,21 +17,23 @@ library(kableExtra)
 library(dplyr)
 library(xtable)
 
+setwd("P:/Conservation Programs/Natural Heritage Program/PNHP_CCVI/CCVI_automation")
+
 url_CCVIpage <- "http://www.naturalheritage.state.pa.us/climate.aspx" #CCVI website
 
-ccvi_file <- "C://Users/singh/OneDrive/PNHP/PNHP Git/ccvi_release_3.02_Master.xlsm" #master excel for CCVI
-ccvi_info <- "C://Users/singh/OneDrive/PNHP/PNHP Git/CCVI Life History Data Hub.xlsx" #Habitat excel
-ccvi_threats <- "C://Users/singh/OneDrive/PNHP/PNHP Git/CompiledELCODE_threatsrecs_June2022.xlsx" #threats excel
-ccvi_images <- "C://Users/singh/OneDrive/PNHP/PNHP Git/Missing Info.xlsx" #image citation excel
+ccvi_file <- "P://Conservation Programs/Natural Heritage Program/PNHP_CCVI/CCVI_automation/ccvi_release_3.02_Master.xlsm" #master excel for CCVI
+ccvi_info <- "P://Conservation Programs/Natural Heritage Program/PNHP_CCVI/CCVI_automation/CCVI Life History Data Hub.xlsx" #Habitat excel
+ccvi_threats <- "P://Conservation Programs/Natural Heritage Program/PNHP_CCVI/CCVI_automation/CompiledELCODE_threatsrecs_June2022.xlsx" #threats excel
+ccvi_images <- "P://Conservation Programs/Natural Heritage Program/PNHP_CCVI/CCVI_automation/Image citations.xlsx" #image citation excel
+colnames_new <- read.csv("P://Conservation Programs/Natural Heritage Program/PNHP_CCVI/CCVI_automation/ccvicolnames.csv") #full column names
 
 ccvi <- read_xlsx(ccvi_file, "Results Table", range=cell_rows(6:150)) #reading in ccvi excel
 ccvi_info <- read_xlsx(ccvi_info) #reading in habitats excel
 ccvi_threats_headings <- as.character(read_xlsx(ccvi_threats,n_max=1,col_names = FALSE))[1:25] #reading in threats headings (separate in order to skip over unneeded cells)
-ccvi_threats <- read_xlsx(ccvi_threats,col_names = ccvi_threats_headings,range=cell_rows(873:2440)) #reading in threats excel
+ccvi_threats <- read_xlsx(ccvi_threats,col_names = ccvi_threats_headings,range=cell_rows(873:2500)) #reading in threats excel
 ccvi_images <- read_xlsx(ccvi_images, "Species Images") #reading in images excel
 
 colnames(ccvi_info)[1] = "SNAME" #renaming species column to SNAME (for matching purposes)
-colnames_new <- read.csv(file="ccvicolnames.csv") #full column names
 colnames(ccvi) <- colnames_new$nameNew #renaming column names in ccvi
 
 ccvi.factors <- read_xlsx(ccvi_file,"Results Table",
@@ -42,6 +43,11 @@ comment.col = which(ccvi.factors == "Comments") #comment columns
 factor.col = comment.col-1 #factor columns
 factor.full.name = c("Sea Level","Natural Barriers","Anthropogenic Barriers","Climate Change Mitigation","Dispersal/Movement","Historical Thermal Niche","Physiological Thermal Niche","Historical Hydrological Niche","Physiological Hydrological Niche","Specific Disturbance Regime","Ice/Snow Dependence","Physical Habitat Restrictions","Dependence on Other Species for Habitat","Diet","Pollinators","Other Interspecific Disperal","Pathogens or Natural Enemies","Competition Sensitivity","Other Interspecific Interactions","Measured Genetic Variation","Recent Genetic Bottlenecks","Reproductive System","Phenological Responses","Documented Response to Climate Change","Modeled Future Change in Population or Range Size","Modeled Overlap of Future with Current Range","Occurence of Protected Areas in Modeled Future Distribution") #full names of CC factors
 ccvi.factors[factor.col] = factor.full.name #renaming factors
+
+bonap.changed.names = c("Carex paupercula","Marshallia pulchra","Primula meadia", "Viburnum trilobum","Viola appalachiensis")
+bonap.alt.names = c("Carex magellanica ssp irrigua","Marshallia grandiflora",
+                    "Dodecatheon meadia","Viburnum opulus var americanum",
+                    "Viola walteri var appalachiensis")
 
 db_ccvi_code <- c("EV","HV","MV","LV","IE") #vulnerability code
 db_ccvi_name <- c("Extremely Vulnerable (EV)","Highly Vulnerable (HV)","Moderately Vulnerable (MV)","Not Vulnerable/Presumed Stable (LV)","Not Vulnerable/Increase Likely (IE)") #vulnerability name
@@ -57,19 +63,46 @@ rm(db_ccvi_code, db_ccvi_name, db_ccvi_desc, db_ccvi_col) #removing objects
 ```{r}
 #### Produces documents ####
 
-setwd("C://Users/singh/OneDrive/PNHP/PDFs") #setting working directory to where I want pdfs to go
+setwd("P:/Conservation Programs/Natural Heritage Program/PNHP_CCVI/CCVI_automation/PDFs") #setting working directory to where I want pdfs to go
 
 for(i in 1:nrow(ccvi)){
   abr.sname = unlist(strsplit(ccvi$SNAME[i]," var. "))[1] #Removes var. from name (done for matching purposes)
-  pictures = list.files(path="C://Users/singh/OneDrive/PNHP/CCVI Plants") #lists names of images
+  spec.pictures = list.files(path="P://Conservation Programs/Natural Heritage Program/PNHP_CCVI/CCVI_automation/CCVI Plant Images") #lists names of images
   sep.names = unlist(strsplit(abr.sname,split=" +")) #separates words of species name
   grep.name = paste0(sep.names[1],".*",sep.names[2],"|",tolower(sep.names[1]),".*",sep.names[2]) #pastes .* between words in order to find images with both names (accounting for _, -, spaces, etc)
-  spec.image = grep(grep.name,pictures,value=TRUE) #finds image matching species name
+  spec.image = grep(grep.name,spec.pictures,value=TRUE) #finds image matching species name
   image.citation = if(is.element(abr.sname,ccvi_images$Species)==TRUE){ #finding if the species is in the images dataframe
     image.index = which(ccvi_images$Species == abr.sname) #row of species
     ccvi_images$Citation[image.index] #pulls citation of image
   } else {
     "Pennsylvania Natural Heritage Program" #If image is not in dataframe
+  }
+  bonap.maps = list.files(path="W://Heritage/Heritage_Projects/1495_PlantConservationPlan/BONAP/Maps") #lists names of maps
+  if(is.element(abr.sname,bonap.changed.names)==TRUE){ #checks for specific species that have name change
+    bonap.disclaimer = "Note: The Pennsylvania Natural Heritage Program is currently updating its taxonomic standard, which sometimes recognizes different names than what is used in BONAP (the source of the range maps)."
+    name.index = which(bonap.changed.names==abr.sname)
+    abr.alt.name = bonap.alt.names[name.index] # identifying new name
+    sep.names = unlist(strsplit(abr.alt.name,split=" +"))
+    if(length(sep.names)==4){
+      bonap.grep = paste0(sep.names[1],".*",sep.names[2],".*",sep.names[3],".*",sep.names[4])
+    } else {
+      bonap.grep = paste0(sep.names[1],".*",sep.names[2])
+    }
+  } else { # for the normal species
+    bonap.disclaimer = ""
+    abr.sname = unlist(strsplit(ccvi$SNAME[i]," var. "))
+    sep.names = unlist(strsplit(abr.sname,split=" +"))
+    if(length(sep.names)==3){
+      bonap.grep = paste0(sep.names[1],"_",sep.names[2],"_var_",sep.names[3])
+    } else {
+      bonap.grep = paste0(sep.names[1],"_",sep.names[2])
+    }
+  }
+  range.map = grep(bonap.grep,bonap.maps,value=TRUE) #finds map matching species name
+  if(is_empty(range.map) == TRUE){
+    missing.map.note = "Range map currently unavailable: Species distribution is still under review due to taxonomic uncertainties."
+  } else {
+    missing.map.note = ""
   }
   habitat.row = grep(abr.sname,ccvi_info$SNAME) #finds rows of species
   habitat = as.character(ccvi_info[habitat.row,"Habitat"]) #habitat
@@ -107,7 +140,7 @@ for(i in 1:nrow(ccvi)){
   fname <- stringi::stri_replace_all_fixed(ccvi$SNAME[i], " ", "_") #file names of species
   pdf_filename <- paste(fname,"_",gsub("[^0-9]", "", Sys.Date() ),sep="") #adding date to name
   makePDF <- function(rnw_template) { #pdf making function
-    knit(here::here("ccvi_summary.rnw"), 
+    knit(here::here("ccvi_summary.Rnw"), 
          output=paste(pdf_filename, ".tex",sep=""))
     call <- paste0("xelatex -interaction=nonstopmode ",pdf_filename, ".tex")
     system(call)
@@ -127,14 +160,13 @@ for(i in 1:nrow(ccvi)){
       }
     }
   }
-  makePDF(ccvi_summary.rnw) #making species pdf
+  makePDF(ccvi_summary.Rnw) #making species pdf
   deletepdfjunk(pdf_filename) #removing excess files 
 }
   
 setwd(here::here()) #restoring original working directory
 
 ```
-
 
 
 

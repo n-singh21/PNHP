@@ -15,10 +15,11 @@
 \usepackage{subcaption}
 \usepackage{longtable}
 \usepackage{url}
+\usepackage{ragged2e}
 \usepackage{colortbl}
 \urlstyle{same}
 \usepackage{graphicx}
-\graphicspath{ {c:/Users/singh/OneDrive/PNHP/CCVI Plants}{c:/Users/singh/OneDrive/PNHP} }
+\graphicspath{ {P:/Conservation Programs/Natural Heritage Program/PNHP_CCVI/CCVI_automation/CCVI Plant Images}{P:/Conservation Programs/Natural Heritage Program/PNHP_CCVI/CCVI_automation}{W:/Heritage/Heritage_Projects/1495_PlantConservationPlan/BONAP/Maps} }
 \usepackage[style=authoryear,hyperref=false]{biblatex}
 \addbibresource{../../citations/PNHP_refs.bib}
 % \usepackage{cite}
@@ -84,15 +85,15 @@
   %\begin{center}
     %\caption{Multirow table.}
     \label{tab:table1}
-    \begin{tabular}{|c|>{\columncolor{\Sexpr{as.character(db_ccvi$color[which(db_ccvi$code==ccvi$Index[i])])}}}c|}
+    \begin{tabular}{|c|c|}
       \hline
-      \textbf{CCVI Score} & \cellcolor{white}\textbf{Description} \\
+      \textbf{CCVI Score} & \textbf{Description} \\
       \hline
-      \cellcolor{RedOrange} \Sexpr{ifelse(ccvi$Index[i]=="EV",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="EV"),"name"])} & \\
-      \cellcolor{BurntOrange} \Sexpr{ifelse(ccvi$Index[i]=="HV",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="HV"),"name"])} & \\
-      \cellcolor{Goldenrod} \Sexpr{ifelse(ccvi$Index[i]=="MV",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="MV"),"name"])} & \\
-      \cellcolor{Green} \Sexpr{ifelse(ccvi$Index[i]=="LV",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="LV"),"name"])} & \\
-      \cellcolor{Gray} \Sexpr{ifelse(ccvi$Index[i]=="IE",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="IE"),"name"])} & \multirow{-5}{5cm}{\Sexpr{db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"description"]}}\\
+      \cellcolor{RedOrange} \Sexpr{ifelse(ccvi$Index[i]=="EV",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="EV"),"name"])} &  \cellcolor{\Sexpr{as.character(db_ccvi$color[which(db_ccvi$code==ccvi$Index[i])])}} \\
+      \cellcolor{BurntOrange} \Sexpr{ifelse(ccvi$Index[i]=="HV",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="HV"),"name"])} & \cellcolor{\Sexpr{as.character(db_ccvi$color[which(db_ccvi$code==ccvi$Index[i])])}} \\
+      \cellcolor{Goldenrod} \Sexpr{ifelse(ccvi$Index[i]=="MV",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="MV"),"name"])} & \cellcolor{\Sexpr{as.character(db_ccvi$color[which(db_ccvi$code==ccvi$Index[i])])}} \\
+      \cellcolor{Green} \Sexpr{ifelse(ccvi$Index[i]=="LV",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="LV"),"name"])} & \cellcolor{\Sexpr{as.character(db_ccvi$color[which(db_ccvi$code==ccvi$Index[i])])}} \\
+      \cellcolor{Gray} \Sexpr{ifelse(ccvi$Index[i]=="IE",db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"name"], db_ccvi[which(db_ccvi$code=="IE"),"name"])} & \multirow{-5}{5cm}{\cellcolor{\Sexpr{as.character(db_ccvi$color[which(db_ccvi$code==ccvi$Index[i])])}}\Sexpr{db_ccvi[which(db_ccvi$code==ccvi$Index[i]),"description"]}}\\
       \hline
     \end{tabular}
   %\end{center}
@@ -109,13 +110,14 @@ cat(sprintf('\\item{%s}', threats), sep = '\n')
 
 
 \noindent \textbf{Main Factors Contributing to Vulnerability Rank:} 
-\Sexpr{factor.table.latex}
-\smallskip \\
+\Sexpr{factor.table.latex} \\
 
-
-
-\noindent \textbf{References:} \\
-
+\noindent \textbf{Species Range Map:} 
+\begin{center}
+\Sexpr{missing.map.note} \\
+\includegraphics[.75\linewidth]{\Sexpr{range.map}} \\
+\Sexpr{bonap.disclaimer} \\
+\end{center}
 
 
 \bigskip
@@ -123,21 +125,17 @@ cat(sprintf('\\item{%s}', threats), sep = '\n')
 \vspace*{\fill}
 %%%  Recommended Citation %%% 
 
-\Sexpr{as.character(ccvi$Assessor[i])}\\
-\Sexpr{as.character(ccvi$DatePasted[i])}\\
-
 \setlength{\fboxsep}{5pt}
 \fbox{
- %\begin{minipage}[l]{0.2\linewidth}
- %\end{minipage}%
  \begin{minipage}[c]{0.9\linewidth}
   \begin{wrapfigure}{l}{0.2\textwidth}
     \centering
     \includegraphics[width=0.2\textwidth]{PNHP Logo}%png logo file at repository root
   \end{wrapfigure}
-   This Climate Change Vulnerability Assessment was developed with funding from the X.  \\ \\ Please cite this CCVI as: \\ 
-   Pennsylvania Natural Heritage Program. \Sexpr{format(Sys.Date(), "%Y")}. \Sexpr{as.character(ccvi$SNAME[i])} NHA. Created on \Sexpr{format(Sys.Date(), "%d %b %Y")}. Available at: \href{\Sexpr{url_CCVIpage}}{\Sexpr{url_CCVIpage}}   
-  \end{minipage}
+   \RaggedRight This Climate Change Vulnerability Assessment was developed with funding from grants WRCP 15530 \& 19600.  \medskip \smallskip \\
+   Please cite this CCVI as: \\  
+   \RaggedRight Pennsylvania Natural Heritage Program. \Sexpr{format(Sys.Date(), "%Y")}. \Sexpr{as.character(ccvi$SNAME[i])} NHA. Created on \Sexpr{format(Sys.Date(), "%d %b %Y")}. Available at: \href{\Sexpr{url_CCVIpage}}{\Sexpr{url_CCVIpage}} 
+\end{minipage}
 }
 
 \end{document}
