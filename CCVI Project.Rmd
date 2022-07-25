@@ -21,6 +21,7 @@ setwd("P:/Conservation Programs/Natural Heritage Program/PNHP_CCVI/CCVI_automati
 
 url_CCVIpage <- "http://www.naturalheritage.state.pa.us/climate.aspx" #CCVI website
 
+## Loading in excels ##
 ccvi_file <- "P://Conservation Programs/Natural Heritage Program/PNHP_CCVI/CCVI_automation/ccvi_release_3.02_Master.xlsm" #master excel for CCVI
 ccvi_info <- "P://Conservation Programs/Natural Heritage Program/PNHP_CCVI/CCVI_automation/CCVI Life History Data Hub.xlsx" #Habitat excel
 ccvi_threats <- "P://Conservation Programs/Natural Heritage Program/PNHP_CCVI/CCVI_automation/CompiledELCODE_threatsrecs_June2022.xlsx" #threats excel
@@ -33,9 +34,11 @@ ccvi_threats_headings <- as.character(read_xlsx(ccvi_threats,n_max=1,col_names =
 ccvi_threats <- read_xlsx(ccvi_threats,col_names = ccvi_threats_headings,range=cell_rows(873:2500)) #reading in threats excel
 ccvi_images <- read_xlsx(ccvi_images, "Species Images") #reading in images excel
 
+## Renaming and adding column and heading names##
 colnames(ccvi_info)[1] = "SNAME" #renaming species column to SNAME (for matching purposes)
 colnames(ccvi) <- colnames_new$nameNew #renaming column names in ccvi
 
+## Filtering out/editing vulnerability factors and comments ##
 ccvi.factors <- read_xlsx(ccvi_file,"Results Table",
                           range=cell_rows(3:5)) #headings of ccvi
 ccvi.factors = as.character(ccvi.factors[1,]) #collecting factors
@@ -44,16 +47,19 @@ factor.col = comment.col-1 #factor columns
 factor.full.name = c("Sea Level","Natural Barriers","Anthropogenic Barriers","Climate Change Mitigation","Dispersal/Movement","Historical Thermal Niche","Physiological Thermal Niche","Historical Hydrological Niche","Physiological Hydrological Niche","Specific Disturbance Regime","Ice/Snow Dependence","Physical Habitat Restrictions","Dependence on Other Species for Habitat","Diet","Pollinators","Other Interspecific Disperal","Pathogens or Natural Enemies","Competition Sensitivity","Other Interspecific Interactions","Measured Genetic Variation","Recent Genetic Bottlenecks","Reproductive System","Phenological Responses","Documented Response to Climate Change","Modeled Future Change in Population or Range Size","Modeled Overlap of Future with Current Range","Occurence of Protected Areas in Modeled Future Distribution") #full names of CC factors
 ccvi.factors[factor.col] = factor.full.name #renaming factors
 
-bonap.changed.names = c("Carex paupercula","Marshallia pulchra","Primula meadia", "Viburnum trilobum","Viola appalachiensis")
+## Dealing with changed names for BONAP maps ##
+bonap.changed.names = c("Carex paupercula","Marshallia pulchra",
+                        "Primula meadia", "Viburnum trilobum",
+                        "Viola appalachiensis") #species w/ different BONAP names
 bonap.alt.names = c("Carex magellanica ssp irrigua","Marshallia grandiflora",
                     "Dodecatheon meadia","Viburnum opulus var americanum",
-                    "Viola walteri var appalachiensis")
+                    "Viola walteri var appalachiensis") #alternative BONAP names
 
+## Setting up Vulernability Index Table ##
 db_ccvi_code <- c("EV","HV","MV","LV","IE") #vulnerability code
 db_ccvi_name <- c("Extremely Vulnerable (EV)","Highly Vulnerable (HV)","Moderately Vulnerable (MV)","Not Vulnerable/Presumed Stable (LV)","Not Vulnerable/Increase Likely (IE)") #vulnerability name
 db_ccvi_desc <- c("Abundance and/or range extent within geographical area assessed extremely likely to substantially decrease or disappear by 2050.","Abundance and/or range extent within geographical area assessed likely to decrease significantly by 2050.","Abundance and/or range extent within geographical area assessed likely to decrease by 2050.","Available evidence does not suggest that abundance and/or range extent within the geographic area assessed will change (increase/decrease) substantially by 2050. Actual range boundaries may change.","Available evidence suggests that abundance and/or range extent within geographic area assessed is likely to increase by 2050.") #vulnerability description
-#db_ccvi_col <- c("red","orange","yellow","green","gray") #vulnerability color
-db_ccvi_col <- c("RedOrange","BurntOrange","Goldenrod","Green","Gray")
+db_ccvi_col <- c("RedOrange","BurntOrange","Goldenrod","Green","Gray") #vulnerability color
 
 db_ccvi <- data.frame(code=db_ccvi_code, name=db_ccvi_name, description=db_ccvi_desc, color=db_ccvi_col, stringsAsFactors=FALSE) #combining vulnerability info into dataframe
 rm(db_ccvi_code, db_ccvi_name, db_ccvi_desc, db_ccvi_col) #removing objects
@@ -79,16 +85,16 @@ for(i in 1:nrow(ccvi)){
   }
   bonap.maps = list.files(path="W://Heritage/Heritage_Projects/1495_PlantConservationPlan/BONAP/Maps") #lists names of maps
   if(is.element(abr.sname,bonap.changed.names)==TRUE){ #checks for specific species that have name change
-    bonap.disclaimer = "Note: The Pennsylvania Natural Heritage Program is currently updating its taxonomic standard, which sometimes recognizes different names than what is used in BONAP (the source of the range maps)."
-    name.index = which(bonap.changed.names==abr.sname)
+    bonap.disclaimer = "Note: The Pennsylvania Natural Heritage Program is currently updating its taxonomic standard, which sometimes recognizes different names than what is used in BONAP (the source of the range maps)." #disclaimer for different BONAP names
+    name.index = which(bonap.changed.names==abr.sname) #index of species
     abr.alt.name = bonap.alt.names[name.index] # identifying new name
-    sep.names = unlist(strsplit(abr.alt.name,split=" +"))
-    if(length(sep.names)==4){
-      bonap.grep = paste0(sep.names[1],".*",sep.names[2],".*",sep.names[3],".*",sep.names[4])
-    } else {
-      bonap.grep = paste0(sep.names[1],".*",sep.names[2])
+    sep.names = unlist(strsplit(abr.alt.name,split=" +")) #splitting up names
+    if(length(sep.names)==4){ # for species with var., spp., etc
+      bonap.grep = paste0(sep.names[1],".*",sep.names[2],".*",sep.names[3],".*",sep.names[4]) #pasting names together with .* to help matching
+    } else { #species with no connector
+      bonap.grep = paste0(sep.names[1],".*",sep.names[2]) 
     }
-  } else { # for the normal species
+  } else { # same for the normal species
     bonap.disclaimer = ""
     abr.sname = unlist(strsplit(ccvi$SNAME[i]," var. "))
     sep.names = unlist(strsplit(abr.sname,split=" +"))
@@ -99,7 +105,7 @@ for(i in 1:nrow(ccvi)){
     }
   }
   range.map = grep(bonap.grep,bonap.maps,value=TRUE) #finds map matching species name
-  if(is_empty(range.map) == TRUE){
+  if(is_empty(range.map) == TRUE){ #creating disclaimer for missing BONAP map
     missing.map.note = "Range map currently unavailable: Species distribution is still under review due to taxonomic uncertainties."
   } else {
     missing.map.note = ""
@@ -132,11 +138,11 @@ for(i in 1:nrow(ccvi)){
     xtable(factor.table,align=c("l","|p{0.275\\textwidth}|","p{0.7\\textwidth}|")) #making latex friendly table 
   bold.center <- function(x) {paste('{\\textbf{\\centerline{',x,'}}}', 
                                     sep ='')} #bold/centering function
-  factor.table.latex = print(factor.table.latex, #produces latex script
+  factor.table.latex = print(factor.table.latex, 
                              include.rownames = FALSE,
                              hline.after = c(-1:(nrow(factor.table)-1)),
                              sanitize.colnames.function=bold.center,
-                             tabular.environment="longtable")
+                             tabular.environment="longtable") #creates latex script
   fname <- stringi::stri_replace_all_fixed(ccvi$SNAME[i], " ", "_") #file names of species
   pdf_filename <- paste(fname,"_",gsub("[^0-9]", "", Sys.Date() ),sep="") #adding date to name
   makePDF <- function(rnw_template) { #pdf making function
@@ -144,8 +150,7 @@ for(i in 1:nrow(ccvi)){
          output=paste(pdf_filename, ".tex",sep=""))
     call <- paste0("xelatex -interaction=nonstopmode ",pdf_filename, ".tex")
     system(call)
-    #system(paste0("xelatex ",pdf_filename))
-    system(call) # 2nd run to apply citation numbers
+    system(call) # 2nd run to apply page numbers
   }
   # function to delete .txt, .log etc if pdf is created successfully.
   deletepdfjunk <- function(pdf_filename){
