@@ -44,7 +44,20 @@ ccvi.factors <- read_xlsx(ccvi_file,"Results Table",
 ccvi.factors = as.character(ccvi.factors[1,]) #collecting factors
 comment.col = which(ccvi.factors == "Comments") #comment columns
 factor.col = comment.col-1 #factor columns
-factor.full.name = c("Sea Level","Natural Barriers","Anthropogenic Barriers","Climate Change Mitigation","Dispersal/Movement","Historical Thermal Niche","Physiological Thermal Niche","Historical Hydrological Niche","Physiological Hydrological Niche","Specific Disturbance Regime","Ice/Snow Dependence","Physical Habitat Restrictions","Dependence on Other Species for Habitat","Diet","Pollinators","Other Interspecific Disperal","Pathogens or Natural Enemies","Competition Sensitivity","Other Interspecific Interactions","Measured Genetic Variation","Recent Genetic Bottlenecks","Reproductive System","Phenological Responses","Documented Response to Climate Change","Modeled Future Change in Population or Range Size","Modeled Overlap of Future with Current Range","Occurence of Protected Areas in Modeled Future Distribution") #full names of CC factors
+factor.full.name = c("Sea Level","Natural Barriers","Anthropogenic Barriers",
+                     "Climate Change Mitigation","Dispersal/Movement",
+                     "Historical Thermal Niche","Physiological Thermal Niche",
+                     "Historical Hydrological Niche", "Physiological Hydrological Niche",
+                     "Specific Disturbance Regime","Ice/Snow Dependence",
+                     "Physical Habitat Restrictions","Dependence on Other Species for Habitat",
+                     "Diet","Pollinators","Other Interspecific Disperal",
+                     "Pathogens or Natural Enemies","Competition Sensitivity",
+                     "Other Interspecific Interactions","Measured Genetic Variation",
+                     "Recent Genetic Bottlenecks","Reproductive System",
+                     "Phenological Responses","Documented Response to Climate Change",
+                     "Modeled Future Change in Population or Range Size",
+                     "Modeled Overlap of Future with Current Range",
+                     "Occurence of Protected Areas in Modeled Future Distribution") #full names of CC factors
 ccvi.factors[factor.col] = factor.full.name #renaming factors
 
 ## Dealing with changed names for BONAP maps ##
@@ -57,8 +70,19 @@ bonap.alt.names = c("Carex magellanica ssp irrigua","Marshallia grandiflora",
 
 ## Setting up Vulernability Index Table ##
 db_ccvi_code <- c("EV","HV","MV","LV","IE") #vulnerability code
-db_ccvi_name <- c("Extremely Vulnerable (EV)","Highly Vulnerable (HV)","Moderately Vulnerable (MV)","Not Vulnerable/Presumed Stable (LV)","Not Vulnerable/Increase Likely (IE)") #vulnerability name
-db_ccvi_desc <- c("Abundance and/or range extent within geographical area assessed extremely likely to substantially decrease or disappear by 2050.","Abundance and/or range extent within geographical area assessed likely to decrease significantly by 2050.","Abundance and/or range extent within geographical area assessed likely to decrease by 2050.","Available evidence does not suggest that abundance and/or range extent within the geographic area assessed will change (increase/decrease) substantially by 2050. Actual range boundaries may change.","Available evidence suggests that abundance and/or range extent within geographic area assessed is likely to increase by 2050.") #vulnerability description
+db_ccvi_name <- c("Extremely Vulnerable (EV)","Highly Vulnerable (HV)",
+                  "Moderately Vulnerable (MV)","Not Vulnerable/Presumed Stable (LV)",
+                  "Not Vulnerable/Increase Likely (IE)") #vulnerability name
+db_ccvi_desc <- c("Abundance and/or range extent within geographical area assessed extremely
+                  likely to substantially decrease or disappear by 2050.","Abundance and/or 
+                  range extent within geographical area assessed likely to decrease 
+                  significantly by 2050.","Abundance and/or range extent within geographical 
+                  area assessed likely to decrease by 2050.","Available evidence does not 
+                  suggest that abundance and/or range extent within the geographic area 
+                  assessed will change (increase/decrease) substantially by 2050. Actual 
+                  range boundaries may change.","Available evidence suggests that abundance
+                  and/or range extent within geographic area assessed is likely to increase
+                  by 2050.") #vulnerability description
 db_ccvi_col <- c("RedOrange","BurntOrange","Goldenrod","Green","Gray") #vulnerability color
 
 db_ccvi <- data.frame(code=db_ccvi_code, name=db_ccvi_name, description=db_ccvi_desc, color=db_ccvi_col, stringsAsFactors=FALSE) #combining vulnerability info into dataframe
@@ -71,7 +95,8 @@ rm(db_ccvi_code, db_ccvi_name, db_ccvi_desc, db_ccvi_col) #removing objects
 
 setwd("P:/Conservation Programs/Natural Heritage Program/PNHP_CCVI/CCVI_automation/PDFs") #setting working directory to where I want pdfs to go
 
-for(i in 1:nrow(ccvi)){
+i=1
+#for(i in 1:nrow(ccvi)){
   abr.sname = unlist(strsplit(ccvi$SNAME[i]," var. "))[1] #Removes var. from name (done for matching purposes)
   spec.pictures = list.files(path="P://Conservation Programs/Natural Heritage Program/PNHP_CCVI/CCVI_automation/CCVI Plant Images") #lists names of images
   sep.names = unlist(strsplit(abr.sname,split=" +")) #separates words of species name
@@ -85,7 +110,9 @@ for(i in 1:nrow(ccvi)){
   }
   bonap.maps = list.files(path="W://Heritage/Heritage_Projects/1495_PlantConservationPlan/BONAP/Maps") #lists names of maps
   if(is.element(abr.sname,bonap.changed.names)==TRUE){ #checks for specific species that have name change
-    bonap.disclaimer = "Note: The Pennsylvania Natural Heritage Program is currently updating its taxonomic standard, which sometimes recognizes different names than what is used in BONAP (the source of the range maps)." #disclaimer for different BONAP names
+    bonap.disclaimer = "Note: The Pennsylvania Natural Heritage Program is currently 
+    updating its taxonomic standard, which sometimes recognizes different names than what
+    is used in BONAP (the source of the range maps)." #disclaimer for different BONAP names
     name.index = which(bonap.changed.names==abr.sname) #index of species
     abr.alt.name = bonap.alt.names[name.index] # identifying new name
     sep.names = unlist(strsplit(abr.alt.name,split=" +")) #splitting up names
@@ -106,7 +133,8 @@ for(i in 1:nrow(ccvi)){
   }
   range.map = grep(bonap.grep,bonap.maps,value=TRUE) #finds map matching species name
   if(is_empty(range.map) == TRUE){ #creating disclaimer for missing BONAP map
-    missing.map.note = "Range map currently unavailable: Species distribution is still under review due to taxonomic uncertainties."
+    missing.map.note = "Range map currently unavailable: Species distribution is still 
+    under review due to taxonomic uncertainties."
   } else {
     missing.map.note = ""
   }
@@ -167,7 +195,7 @@ for(i in 1:nrow(ccvi)){
   }
   makePDF(ccvi_summary.Rnw) #making species pdf
   deletepdfjunk(pdf_filename) #removing excess files 
-}
+#}
   
 setwd(here::here()) #restoring original working directory
 
