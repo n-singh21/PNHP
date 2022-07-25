@@ -95,8 +95,7 @@ rm(db_ccvi_code, db_ccvi_name, db_ccvi_desc, db_ccvi_col) #removing objects
 
 setwd("P:/Conservation Programs/Natural Heritage Program/PNHP_CCVI/CCVI_automation/PDFs") #setting working directory to where I want pdfs to go
 
-i=1
-#for(i in 1:nrow(ccvi)){
+for(i in 1:nrow(ccvi)){
   abr.sname = unlist(strsplit(ccvi$SNAME[i]," var. "))[1] #Removes var. from name (done for matching purposes)
   spec.pictures = list.files(path="P://Conservation Programs/Natural Heritage Program/PNHP_CCVI/CCVI_automation/CCVI Plant Images") #lists names of images
   sep.names = unlist(strsplit(abr.sname,split=" +")) #separates words of species name
@@ -195,7 +194,7 @@ i=1
   }
   makePDF(ccvi_summary.Rnw) #making species pdf
   deletepdfjunk(pdf_filename) #removing excess files 
-#}
+}
   
 setwd(here::here()) #restoring original working directory
 
