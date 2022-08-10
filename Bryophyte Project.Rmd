@@ -1,0 +1,87 @@
+---
+title: "Bryophyte Project"
+output: pdf_document
+date: '2022-07-25'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(lubridate)
+library(readr)
+bry_data = read_csv("bryophyte checklist occurrence data.csv")
+```
+
+
+```{r}
+passed_bry_data = data.frame(matrix(ncol=ncol(bry_data),nrow=0))
+
+colnames(passed_bry_data) = colnames(bry_data)
+passed_bry_data[,"eventDate"] = as.Date(passed_bry_data[,"eventDate"])
+
+i=1
+
+for(ii in 1:nrow(bry_data)){
+  na_test = is.na(bry_data[ii,c("order","family","scientificName","taxonID","recordedBy","recordNumber","county","locality","eventDate")])
+  if(any(na_test == TRUE)){
+    next
+  } else {
+    if(bry_data$eventDate[ii] > (Sys.Date()-years(100))){
+      passed_bry_data[i,] = bry_data[ii,] 
+      i = i + 1
+    }
+  }
+}
+
+# takes about 10-11 minutes
+
+```
+
+```{r}
+sn_data = passed_bry_data[which(passed_bry_data$recordNumber == "s.n."),]
+non_sn_data = passed_bry_data[which(passed_bry_data$recordNumber != "s.n."),]
+unique_collections = non_sn_data[!duplicated(non_sn_data[,c("recordedBy","recordNumber")]),c("recordedBy","recordNumber")]
+
+unique_bry_data = data.frame(matrix(ncol=ncol(bry_data),nrow=0))
+colnames(unique_bry_data) = colnames(bry_data)
+
+for(ii in 1:nrow(unique_collections)){
+  duplicate_test = which(non_sn_data$recordedBy == unique_collections[ii,1] &
+                        non_sn_data$recordNumber == unique_collections[ii,2])
+  if(length(duplicate_test)>1){
+    na_test = data.frame(is.na(non_sn_data[duplicate_test,]))
+    max_fields = max(apply(na_test,1,sum))
+    max_index = which(apply(na_test,1,sum)==max_fields)[[1]]
+    unique_bry_data[ii,] = non_sn_data[duplicate_test[max_index],]
+  } else {
+    unique_bry_data[ii,] = non_sn_data[duplicate_test,]
+  }
+}
+
+# takes about 5 minutes to run
+
+```
+
+```{r}
+write.csv(passed_bry_data,file="Passed_Bryophyte.csv",row.names = FALSE)
+
+write.csv(unique_bry_data,file="Unique_Bryophyte.csv",row.names = FALSE)
+
+write.csv(sn_data,file="SN_Bryophyte.csv",row.names = FALSE)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
