@@ -49,6 +49,38 @@ for(x in 1:length(inat_species)){
 }
 ```
 
+```{r}
+# function pulling data from PNHP project page
+r_project_data = get_inat_obs_project("pennsylvania-natural-heritage-program",type="observations")
+
+# reformatting tag_list column to change from list to characters
+r_project_data$tag_list = as.character(r_project_data$tag_list)
+r_project_data$photos = NA
+r_project_data[r_project_data == "character(0)"] = NA
+r_project_data$tag_list = gsub("^c\\(|\\)$|\"","",r_project_data$tag_list)
+
+# writing r data to csv
+write.csv(r_project_data,file="R_iNatProject_data.csv",row.names = FALSE)
+
+# reading in manual data
+manual_project_data = read_csv("observations-252324.csv")
+
+# comparing field presence in different downloads
+only_r = setdiff(names(r_project_data),names(manual_project_data))
+only_manual = setdiff(names(manual_project_data),names(r_project_data))
+both = intersect(names(manual_project_data),names(r_project_data))
+
+# writing fields list to csv 
+max_length = max(c(length(only_r),length(only_manual),length(both)))
+project_data_fields = data.frame(
+           only_r = c(only_r,rep(NA,max_length-length(only_r))),
+           only_manual = c(only_manual,rep(NA,max_length-length(only_manual))),
+           both = c(both,rep(NA,max_length-length(both)))
+           )
+write.csv(project_data_fields,file="Project_data_fields.csv",row.names = FALSE)
+
+```
+
 
 ```{r}
 # Organizing downloaded data - csv of missing species and found species
@@ -81,7 +113,7 @@ write.csv(unique_inat_data,file="Downloaded_Data.csv",row.names = FALSE)
 ```
 
 ```{r}
-# Save an object to a file
+# Save an object to a file - was used for the initial download from iNat - not really needed
 saveRDS(a, file = "inat-data.rds")
 # Restore the object
 readRDS(file = "inat-data.rds")
@@ -117,7 +149,7 @@ inat_download[inat_download == "" | inat_download == " "] = NA
 
 #Converting Pete's data into good format
 pete_data = read_xlsx("iNat fields.xlsx",sheet = "example data")
-names(which(sapply(pete_data,class) == "numeric"))
+pete_num_cols = names(which(sapply(pete_data,class) == "numeric"))
 
 col_reorder = na.exclude(match(names(inat_download),names(pete_data)))
 col_reorder = c(col_reorder,setdiff(1:ncol(pete_data),col_reorder))
